@@ -104,7 +104,7 @@ function WorkDetail() {
         );
     }
 
-    const isOwner = user && user.id === work.authorId;
+    const isOwner = user && (user._id || user.id) === work.authorId;
     const isAdmin = user && user.role === 'admin';
 
     return (

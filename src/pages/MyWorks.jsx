@@ -11,15 +11,14 @@ function MyWorks() {
 
     const fetchWorks = async () => {
         setLoading(true);
-        const params = { limit: 50 };
+        const params = { authorId: user._id || user.id, limit: 50 };
         if (filter) {
             params.status = filter;
         }
         
         const result = await workAPI.getAll(params);
         if (result.data) {
-            const myWorks = result.data.works.filter(w => w.authorId === user.id);
-            setWorks(myWorks);
+            setWorks(result.data.works);
         }
         setLoading(false);
     };

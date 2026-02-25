@@ -45,7 +45,7 @@ function CommentCard({ comment, onDelete }) {
         }
     };
 
-    const isOwner = user && user.id === comment.userId;
+    const isOwner = user && (user._id || user.id) === comment.userId;
     const isAdmin = user && user.role === 'admin';
 
     if (comment.status === 'hidden' && !isAdmin) {

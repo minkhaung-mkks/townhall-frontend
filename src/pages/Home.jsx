@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { workAPI, categoryAPI } from '../api';
+import { workAPI, categoryAPI, statsAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 import WorkCard from '../components/WorkCard';
 import SearchBar from '../components/SearchBar';
@@ -8,7 +8,9 @@ import SearchBar from '../components/SearchBar';
 function Home() {
     const [works, setWorks] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [statsLoading, setStatsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [pagination, setPagination] = useState({
@@ -54,8 +56,18 @@ function Home() {
         }
     };
 
+    const fetchStats = async () => {
+        setStatsLoading(true);
+        const result = await statsAPI.getStats();
+        if (result.data) {
+            setStats(result.data);
+        }
+        setStatsLoading(false);
+    };
+
     useEffect(() => {
         fetchCategories();
+        fetchStats();
     }, []);
 
     useEffect(() => {
@@ -70,6 +82,117 @@ function Home() {
     const handlePageChange = (newPage) => {
         setPagination(prev => ({ ...prev, page: newPage }));
     };
+
+
+
+    const TopWriterCard = ({ writer, rank }) => (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px',
+            background: rank <= 3 ? '#f8f9fa' : 'transparent',
+            borderRadius: '8px',
+            marginBottom: '8px'
+        }}>
+            <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : '#e9ecef',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                marginRight: '12px'
+            }}>
+                {rank}
+            </div>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: '500' }}>
+                    {writer.author?.firstname} {writer.author?.lastname}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666' }}>
+                    @{writer.author?.username}
+                </div>
+            </div>
+            <div style={{
+                background: '#007bff',
+                color: 'white',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: 'bold'
+            }}>
+                {writer.workCount} {writer.workCount === 1 ? 'work' : 'works'}
+            </div>
+        </div>
+    );
+
+    const TopArticleCard = ({ article, rank }) => (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px',
+            background: rank <= 3 ? '#f8f9fa' : 'transparent',
+            borderRadius: '8px',
+            marginBottom: '8px'
+        }}>
+            <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : '#e9ecef',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                marginRight: '12px'
+            }}>
+                {rank}
+            </div>
+            <div style={{ flex: 1 }}>
+                <Link to={`/work/${article.workId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ fontWeight: '500', color: '#007bff' }}>
+                        {article.work?.title}
+                    </div>
+                </Link>
+            </div>
+            <div style={{
+                background: '#28a745',
+                color: 'white',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: 'bold'
+            }}>
+                {article.commentCount} {article.commentCount === 1 ? 'comment' : 'comments'}
+            </div>
+        </div>
+    );
+
+    const CategoryBar = ({ category, maxCount }) => (
+        <div style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontWeight: '500' }}>{category.category?.name}</span>
+                <span style={{ color: '#666' }}>{category.count}</span>
+            </div>
+            <div style={{
+                height: '8px',
+                background: '#e9ecef',
+                borderRadius: '4px',
+                overflow: 'hidden'
+            }}>
+                <div style={{
+                    height: '100%',
+                    width: `${(category.count / maxCount) * 100}%`,
+                    background: 'linear-gradient(90deg, #007bff, #6c63ff)',
+                    borderRadius: '4px'
+                }} />
+            </div>
+        </div>
+    );
 
     return (
         <div className="container">
@@ -86,6 +209,97 @@ function Home() {
                     </Link>
                 )}
             </div>
+
+            {!statsLoading && stats && (
+                <div style={{ marginBottom: '30px' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '20px',
+                        marginBottom: '30px'
+                    }}>
+                        <div className="card">
+                            <h3 style={{ marginBottom: '15px' }}>Top Writers</h3>
+                            {stats.topWriters?.length > 0 ? (
+                                stats.topWriters.map((writer, index) => (
+                                    <TopWriterCard key={writer.authorId} writer={writer} rank={index + 1} />
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                                    No writers yet
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{ marginBottom: '15px' }}>Top Articles</h3>
+                            {stats.topArticles?.length > 0 ? (
+                                stats.topArticles.map((article, index) => (
+                                    <TopArticleCard key={article.workId} article={article} rank={index + 1} />
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                                    No articles yet
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '20px',
+                        marginBottom: '30px'
+                    }}>
+                        <div className="card">
+                            <h3 style={{ marginBottom: '15px' }}>Works by Category</h3>
+                            {stats.worksByCategory?.length > 0 ? (
+                                stats.worksByCategory.map((cat) => (
+                                    <CategoryBar 
+                                        key={cat.categoryId} 
+                                        category={cat} 
+                                        maxCount={Math.max(...stats.worksByCategory.map(c => c.count))}
+                                    />
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                                    No categories yet
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="card">
+                            <h3 style={{ marginBottom: '15px' }}>Recent Works</h3>
+                            {stats.recentWorks?.length > 0 ? (
+                                stats.recentWorks.map((work) => (
+                                    <Link 
+                                        key={work._id} 
+                                        to={`/work/${work._id}`}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                    >
+                                        <div style={{
+                                            padding: '12px',
+                                            borderBottom: '1px solid #eee',
+                                            transition: 'background 0.2s'
+                                        }}>
+                                            <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+                                                {work.title}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#666' }}>
+                                                By {work.authorId}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+                                    No works yet
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <SearchBar 
                 search={search}

@@ -99,3 +99,7 @@ export const adminAPI = {
     updateComment: (id, data) => apiCall(`/admin/comment/${id}`, { method: 'PATCH', body: data }),
     deleteComment: (id) => apiCall(`/admin/comment/${id}`, { method: 'DELETE' }),
 };
+
+export const statsAPI = {
+    getStats: () => apiCall('/stats'),
+};

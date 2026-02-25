@@ -31,7 +31,8 @@ function Profile() {
     }, [user]);
 
     const fetchProfile = async () => {
-        const result = await userAPI.getById(user.id);
+        const userId = user._id || user.id;
+        const result = await userAPI.getById(userId);
         if (result.data) {
             setProfile(result.data);
             setFormData({
@@ -44,7 +45,8 @@ function Profile() {
     };
 
     const fetchUserWorks = async () => {
-        const result = await workAPI.getAll({ authorId: user.id, limit: 20 });
+        const userId = user._id || user.id;
+        const result = await workAPI.getAll({ authorId: userId, limit: 20 });
         if (result.data) {
             setUserWorks(result.data.works);
         }
@@ -55,7 +57,8 @@ function Profile() {
         setError('');
         setMessage('');
 
-        const result = await userAPI.update(user.id, formData);
+        const userId = user._id || user.id;
+        const result = await userAPI.update(userId, formData);
         if (result.data) {
             setMessage('Profile updated successfully!');
             setEditing(false);
@@ -80,7 +83,8 @@ function Profile() {
             return;
         }
 
-        const result = await userAPI.update(user.id, { 
+        const userId = user._id || user.id;
+        const result = await userAPI.update(userId, { 
             password: passwordData.newPassword 
         });
         
