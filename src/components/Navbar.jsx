@@ -41,7 +41,7 @@ function Navbar() {
                             <Link to="/my-works" style={{ color: 'white' }}>My Works</Link>
                             
                             {(user.role === 'editor' || user.role === 'admin') && (
-                                <Link to="/editor" style={{ color: 'white' }}>Editor Dashboard</Link>
+                                <Link to="/editor-dashboard" style={{ color: 'white' }}>Editor Dashboard</Link>
                             )}
                             
                             {user.role === 'admin' && (

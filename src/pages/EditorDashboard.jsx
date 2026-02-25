@@ -3,68 +3,43 @@ import { Link } from 'react-router-dom';
 import { workAPI, reviewAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 
+const STATUS_TABS = [
+    { key: 'submitted', label: 'Pending' },
+    { key: 'approved', label: 'Approved' },
+    { key: 'rejected', label: 'Rejected' },
+    { key: 'draft', label: 'Draft' },
+    { key: 'published', label: 'Published' },
+];
+
 function EditorDashboard() {
-    const [submittedWorks, setSubmittedWorks] = useState([]);
     const [reviewHistory, setReviewHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedWork, setSelectedWork] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const [modalData, setModalData] = useState({
-        decision: 'approved',
-        feedback: ''
-    });
-    const [error, setError] = useState('');
-    
+    const [activeTab, setActiveTab] = useState('submitted');
+    const [works, setWorks] = useState([]);
+    const [worksLoading, setWorksLoading] = useState(true);
+
     const { user } = useAuth();
 
     useEffect(() => {
-        fetchSubmittedWorks();
         fetchReviewHistory();
     }, []);
 
-    const fetchSubmittedWorks = async () => {
-        const result = await workAPI.getAll({ status: 'submitted', limit: 50 });
+    useEffect(() => {
+        fetchWorksByStatus();
+    }, [activeTab]);
+
+    const fetchWorksByStatus = async () => {
+        setWorksLoading(true);
+        const result = await workAPI.getAll({ status: activeTab, limit: 50 });
         if (result.data) {
-            setSubmittedWorks(result.data.works);
+            setWorks(result.data.works);
         }
-        setLoading(false);
+        setWorksLoading(false);
     };
 
     const fetchReviewHistory = async () => {
         const result = await reviewAPI.getAll();
         if (result.data) {
             setReviewHistory(result.data.reviews);
-        }
-    };
-
-    const openReviewModal = (work) => {
-        setSelectedWork(work);
-        setModalData({ decision: 'approved', feedback: '' });
-        setShowModal(true);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedWork(null);
-        setModalData({ decision: 'approved', feedback: '' });
-    };
-
-    const handleSubmitReview = async () => {
-        if (!selectedWork) return;
-        setError('');
-
-        const result = await reviewAPI.create({
-            workId: selectedWork._id,
-            decision: modalData.decision,
-            feedback: modalData.feedback
-        });
-
-        if (result.data) {
-            closeModal();
-            fetchSubmittedWorks();
-            fetchReviewHistory();
-        } else {
-            setError(result.error || 'Failed to submit review');
         }
     };
 
@@ -78,20 +53,51 @@ function EditorDashboard() {
         });
     };
 
+    const statusColor = (status) => {
+        switch (status) {
+            case 'submitted': return '#ffc107';
+            case 'approved': return '#28a745';
+            case 'rejected': return '#dc3545';
+            case 'draft': return '#6c757d';
+            case 'published': return '#007bff';
+            default: return '#6c757d';
+        }
+    };
+
     return (
         <div className="container">
             <h1 style={{ marginBottom: '30px' }}>Editor Dashboard</h1>
 
             <div className="card" style={{ marginBottom: '30px' }}>
-                <h2 style={{ marginBottom: '20px' }}>
-                    Pending Reviews ({submittedWorks.length})
-                </h2>
+                <h2 style={{ marginBottom: '20px' }}>All Works</h2>
 
-                {loading ? (
+                <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '2px solid #dee2e6' }}>
+                    {STATUS_TABS.filter(tab => tab.key !== 'draft' || user?.role === 'admin').map(tab => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            style={{
+                                padding: '10px 20px',
+                                border: 'none',
+                                background: 'none',
+                                cursor: 'pointer',
+                                fontWeight: activeTab === tab.key ? 'bold' : 'normal',
+                                color: activeTab === tab.key ? statusColor(tab.key) : '#666',
+                                borderBottom: activeTab === tab.key ? `3px solid ${statusColor(tab.key)}` : '3px solid transparent',
+                                marginBottom: '-2px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {worksLoading ? (
                     <div className="loading">Loading...</div>
-                ) : submittedWorks.length === 0 ? (
+                ) : works.length === 0 ? (
                     <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>
-                        No works pending review.
+                        No {STATUS_TABS.find(t => t.key === activeTab)?.label.toLowerCase()} works.
                     </p>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -99,12 +105,12 @@ function EditorDashboard() {
                             <tr style={{ background: '#f8f9fa' }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Title</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Author</th>
-                                <th style={{ textAlign: 'left', padding: '12px' }}>Submitted</th>
+                                <th style={{ textAlign: 'left', padding: '12px' }}>Date</th>
                                 <th style={{ textAlign: 'right', padding: '12px' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {submittedWorks.map(work => (
+                            {works.map(work => (
                                 <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '12px' }}>
                                         <Link to={`/work/${work._id}`} style={{ color: '#007bff', fontWeight: '500' }}>
@@ -112,15 +118,15 @@ function EditorDashboard() {
                                         </Link>
                                     </td>
                                     <td style={{ padding: '12px' }}>{work.authorId}</td>
-                                    <td style={{ padding: '12px' }}>{formatDate(work.submittedAt)}</td>
+                                    <td style={{ padding: '12px' }}>{formatDate(work.submittedAt || work.createdAt)}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>
-                                        <button
-                                            className="btn btn-success"
-                                            style={{ fontSize: '12px', padding: '6px 12px', marginRight: '5px' }}
-                                            onClick={() => openReviewModal(work)}
+                                        <Link
+                                            to={`/work/${work._id}`}
+                                            className="btn btn-primary"
+                                            style={{ fontSize: '12px', padding: '6px 12px', textDecoration: 'none' }}
                                         >
-                                            Review
-                                        </button>
+                                            {activeTab === 'submitted' ? 'Review' : 'View'}
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
@@ -149,7 +155,11 @@ function EditorDashboard() {
                         <tbody>
                             {reviewHistory.map(review => (
                                 <tr key={review._id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '12px' }}>{review.workId}</td>
+                                    <td style={{ padding: '12px' }}>
+                                        <Link to={`/work/${review.workId}`} style={{ color: '#007bff' }}>
+                                            {review.workId}
+                                        </Link>
+                                    </td>
                                     <td style={{ padding: '12px' }}>
                                         <span style={{
                                             background: review.decision === 'approved' ? '#28a745' : '#dc3545',
@@ -179,75 +189,6 @@ function EditorDashboard() {
                 )}
             </div>
 
-            {showModal && selectedWork && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: 'white',
-                        padding: '30px',
-                        borderRadius: '8px',
-                        maxWidth: '500px',
-                        width: '90%',
-                        maxHeight: '80vh',
-                        overflow: 'auto'
-                    }}>
-                        <h3 style={{ marginBottom: '20px' }}>Review Work</h3>
-                        
-                        <div style={{ marginBottom: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '5px' }}>
-                            <h4>{selectedWork.title}</h4>
-                            <p style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
-                                By: {selectedWork.authorId}
-                            </p>
-                        </div>
-
-                        {error && <p className="error-message">{error}</p>}
-
-                        <div className="form-group">
-                            <label>Decision</label>
-                            <select
-                                value={modalData.decision}
-                                onChange={(e) => setModalData({ ...modalData, decision: e.target.value })}
-                                style={{ width: '100%', padding: '10px' }}
-                            >
-                                <option value="approved">Approve</option>
-                                <option value="rejected">Reject</option>
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Feedback (optional)</label>
-                            <textarea
-                                value={modalData.feedback}
-                                onChange={(e) => setModalData({ ...modalData, feedback: e.target.value })}
-                                placeholder="Add feedback for the author..."
-                                style={{ width: '100%', minHeight: '100px', padding: '10px' }}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                            <button className="btn btn-secondary" onClick={closeModal}>
-                                Cancel
-                            </button>
-                            <button 
-                                className={`btn ${modalData.decision === 'approved' ? 'btn-success' : 'btn-danger'}`}
-                                onClick={handleSubmitReview}
-                            >
-                                Submit Review
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
