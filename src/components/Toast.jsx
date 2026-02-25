@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import theme from '../theme';
 
 function Toast({ message, type = 'info', duration = 3000, onClose }) {
     const [visible, setVisible] = useState(true);
@@ -14,14 +15,7 @@ function Toast({ message, type = 'info', duration = 3000, onClose }) {
 
     if (!visible) return null;
 
-    const colors = {
-        success: { bg: '#d4edda', border: '#28a745', text: '#155724' },
-        error: { bg: '#f8d7da', border: '#dc3545', text: '#721c24' },
-        warning: { bg: '#fff3cd', border: '#ffc107', text: '#856404' },
-        info: { bg: '#d1ecf1', border: '#17a2b8', text: '#0c5460' }
-    };
-
-    const style = colors[type] || colors.info;
+    const style = theme.toast[type] || theme.toast.info;
 
     return (
         <div style={{
@@ -33,12 +27,13 @@ function Toast({ message, type = 'info', duration = 3000, onClose }) {
             border: `1px solid ${style.border}`,
             borderLeft: `4px solid ${style.border}`,
             color: style.text,
-            borderRadius: '5px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            borderRadius: '2px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
+            fontFamily: theme.fonts.body,
             animation: 'slideIn 0.3s ease-out'
         }}>
             <style>
@@ -48,7 +43,7 @@ function Toast({ message, type = 'info', duration = 3000, onClose }) {
                 }`}
             </style>
             <span>{message}</span>
-            <button 
+            <button
                 onClick={() => { setVisible(false); if (onClose) onClose(); }}
                 style={{
                     background: 'none',
@@ -60,7 +55,7 @@ function Toast({ message, type = 'info', duration = 3000, onClose }) {
                     lineHeight: '1'
                 }}
             >
-                ×
+                &times;
             </button>
         </div>
     );

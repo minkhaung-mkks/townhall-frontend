@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { workAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import theme from '../theme';
 
 function MyWorks() {
     const [works, setWorks] = useState([]);
@@ -15,7 +16,7 @@ function MyWorks() {
         if (filter) {
             params.status = filter;
         }
-        
+
         const result = await workAPI.getAll(params);
         if (result.data) {
             setWorks(result.data.works);
@@ -46,32 +47,24 @@ function MyWorks() {
         });
     };
 
-    const getStatusBadge = (status) => {
-        const colors = {
-            draft: '#6c757d',
-            submitted: '#ffc107',
-            approved: '#28a745',
-            rejected: '#dc3545',
-            published: '#007bff',
-            hidden: '#333'
-        };
-        return (
-            <span style={{
-                background: colors[status] || '#6c757d',
-                color: 'white',
-                padding: '3px 10px',
-                borderRadius: '3px',
-                fontSize: '12px'
-            }}>
-                {status}
-            </span>
-        );
-    };
+    const getStatusBadge = (status) => (
+        <span style={{
+            background: theme.status[status] || theme.colors.muted,
+            color: 'white',
+            padding: '3px 10px',
+            borderRadius: '2px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+        }}>
+            {status}
+        </span>
+    );
 
     return (
         <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>My Works</h1>
+                <h1 style={{ fontFamily: theme.fonts.heading }}>My Works</h1>
                 <Link to="/create-work" className="btn btn-primary">+ Create New Work</Link>
             </div>
 
@@ -79,7 +72,14 @@ function MyWorks() {
                 <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ddd' }}
+                    style={{
+                        padding: '8px',
+                        borderRadius: '2px',
+                        border: `1px solid ${theme.colors.border}`,
+                        background: theme.colors.cardBg,
+                        fontFamily: theme.fonts.body,
+                        color: theme.colors.ink,
+                    }}
                 >
                     <option value="">All Statuses</option>
                     <option value="draft">Draft</option>
@@ -94,7 +94,7 @@ function MyWorks() {
                 <div className="loading">Loading...</div>
             ) : works.length === 0 ? (
                 <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-                    <p>You haven't created any works yet.</p>
+                    <p style={{ color: theme.colors.muted }}>You haven't created any works yet.</p>
                     <Link to="/create-work" className="btn btn-primary" style={{ marginTop: '15px' }}>
                         Create Your First Work
                     </Link>
@@ -103,7 +103,7 @@ function MyWorks() {
                 <div className="card" style={{ padding: 0 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '15px' }}>Title</th>
                                 <th style={{ textAlign: 'left', padding: '15px' }}>Status</th>
                                 <th style={{ textAlign: 'left', padding: '15px' }}>Created</th>
@@ -113,9 +113,9 @@ function MyWorks() {
                         </thead>
                         <tbody>
                             {works.map(work => (
-                                <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={work._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '15px' }}>
-                                        <Link to={`/work/${work._id}`} style={{ color: '#333', fontWeight: '500' }}>
+                                        <Link to={`/work/${work._id}`} style={{ color: theme.colors.ink, fontWeight: '500' }}>
                                             {work.title}
                                         </Link>
                                     </td>
@@ -123,7 +123,7 @@ function MyWorks() {
                                     <td style={{ padding: '15px' }}>{formatDate(work.createdAt)}</td>
                                     <td style={{ padding: '15px' }}>{formatDate(work.updatedAt)}</td>
                                     <td style={{ padding: '15px', textAlign: 'right' }}>
-                                        <Link 
+                                        <Link
                                             to={`/edit-work/${work._id}`}
                                             className="btn btn-secondary"
                                             style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { workAPI, reviewAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import theme from '../theme';
 
 const STATUS_TABS = [
     { key: 'submitted', label: 'Pending' },
@@ -53,25 +54,16 @@ function EditorDashboard() {
         });
     };
 
-    const statusColor = (status) => {
-        switch (status) {
-            case 'submitted': return '#ffc107';
-            case 'approved': return '#28a745';
-            case 'rejected': return '#dc3545';
-            case 'draft': return '#6c757d';
-            case 'published': return '#007bff';
-            default: return '#6c757d';
-        }
-    };
+    const statusColor = (status) => theme.status[status] || theme.colors.muted;
 
     return (
         <div className="container">
-            <h1 style={{ marginBottom: '30px' }}>Editor Dashboard</h1>
+            <h1 style={{ marginBottom: '30px', fontFamily: theme.fonts.heading }}>Editor Dashboard</h1>
 
             <div className="card" style={{ marginBottom: '30px' }}>
-                <h2 style={{ marginBottom: '20px' }}>All Works</h2>
+                <h2 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>All Works</h2>
 
-                <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '2px solid #dee2e6' }}>
+                <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: `2px solid ${theme.colors.border}` }}>
                     {STATUS_TABS.filter(tab => tab.key !== 'draft' || user?.role === 'admin').map(tab => (
                         <button
                             key={tab.key}
@@ -82,10 +74,13 @@ function EditorDashboard() {
                                 background: 'none',
                                 cursor: 'pointer',
                                 fontWeight: activeTab === tab.key ? 'bold' : 'normal',
-                                color: activeTab === tab.key ? statusColor(tab.key) : '#666',
+                                color: activeTab === tab.key ? statusColor(tab.key) : theme.colors.muted,
                                 borderBottom: activeTab === tab.key ? `3px solid ${statusColor(tab.key)}` : '3px solid transparent',
                                 marginBottom: '-2px',
-                                fontSize: '14px'
+                                fontSize: '12px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                fontFamily: theme.fonts.body,
                             }}
                         >
                             {tab.label}
@@ -96,13 +91,13 @@ function EditorDashboard() {
                 {worksLoading ? (
                     <div className="loading">Loading...</div>
                 ) : works.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>
+                    <p style={{ textAlign: 'center', color: theme.colors.muted, padding: '20px' }}>
                         No {STATUS_TABS.find(t => t.key === activeTab)?.label.toLowerCase()} works.
                     </p>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Title</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Author</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Date</th>
@@ -111,14 +106,14 @@ function EditorDashboard() {
                         </thead>
                         <tbody>
                             {works.map(work => (
-                                <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={work._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '12px' }}>
-                                        <Link to={`/work/${work._id}`} style={{ color: '#007bff', fontWeight: '500' }}>
+                                        <Link to={`/work/${work._id}`} style={{ color: theme.colors.burgundy, fontWeight: '500' }}>
                                             {work.title}
                                         </Link>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{work.authorId}</td>
-                                    <td style={{ padding: '12px' }}>{formatDate(work.submittedAt || work.createdAt)}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{work.author ? `${work.author.firstname} ${work.author.lastname}` : work.authorId}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{formatDate(work.submittedAt || work.createdAt)}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>
                                         <Link
                                             to={`/work/${work._id}`}
@@ -136,16 +131,16 @@ function EditorDashboard() {
             </div>
 
             <div className="card">
-                <h2 style={{ marginBottom: '20px' }}>My Review History</h2>
+                <h2 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>My Review History</h2>
 
                 {reviewHistory.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>
+                    <p style={{ textAlign: 'center', color: theme.colors.muted, padding: '20px' }}>
                         No reviews yet.
                     </p>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Work</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Decision</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Feedback</th>
@@ -154,19 +149,20 @@ function EditorDashboard() {
                         </thead>
                         <tbody>
                             {reviewHistory.map(review => (
-                                <tr key={review._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={review._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '12px' }}>
-                                        <Link to={`/work/${review.workId}`} style={{ color: '#007bff' }}>
+                                        <Link to={`/work/${review.workId}`} style={{ color: theme.colors.burgundy }}>
                                             {review.workId}
                                         </Link>
                                     </td>
                                     <td style={{ padding: '12px' }}>
                                         <span style={{
-                                            background: review.decision === 'approved' ? '#28a745' : '#dc3545',
+                                            background: review.decision === 'approved' ? theme.colors.forest : theme.colors.rust,
                                             color: 'white',
                                             padding: '3px 10px',
-                                            borderRadius: '3px',
-                                            fontSize: '12px'
+                                            borderRadius: '2px',
+                                            fontSize: '12px',
+                                            textTransform: 'uppercase',
                                         }}>
                                             {review.decision}
                                         </span>
@@ -176,12 +172,13 @@ function EditorDashboard() {
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
-                                            display: 'block'
+                                            display: 'block',
+                                            color: theme.colors.secondary,
                                         }}>
                                             {review.feedback || '-'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{formatDate(review.createdAt)}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{formatDate(review.createdAt)}</td>
                                 </tr>
                             ))}
                         </tbody>

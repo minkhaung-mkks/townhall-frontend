@@ -1,9 +1,11 @@
+import theme from '../theme';
+
 function SearchBar({ search, onSearchChange, onSearch }) {
     return (
-        <div style={{ 
-            display: 'flex', 
-            gap: '10px', 
-            marginBottom: '20px' 
+        <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginBottom: '20px'
         }}>
             <input
                 type="text"
@@ -13,9 +15,12 @@ function SearchBar({ search, onSearchChange, onSearch }) {
                 style={{
                     flex: 1,
                     padding: '10px 15px',
-                    border: '1px solid #ddd',
-                    borderRadius: '5px',
-                    fontSize: '14px'
+                    border: `1px solid ${theme.colors.border}`,
+                    borderRadius: '2px',
+                    fontSize: '14px',
+                    background: theme.colors.cardBg,
+                    fontFamily: theme.fonts.body,
+                    color: theme.colors.ink,
                 }}
                 onKeyPress={(e) => {
                     if (e.key === 'Enter') {
@@ -23,7 +28,7 @@ function SearchBar({ search, onSearchChange, onSearch }) {
                     }
                 }}
             />
-            <button 
+            <button
                 className="btn btn-primary"
                 onClick={onSearch}
             >

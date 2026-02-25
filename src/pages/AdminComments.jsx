@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { commentAPI, adminAPI } from '../api';
+import theme from '../theme';
+
+const adminNavStyle = {
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    color: theme.colors.ink,
+    padding: '6px 0',
+    borderBottom: `1px solid transparent`,
+};
+const adminNavActiveStyle = {
+    ...adminNavStyle,
+    fontWeight: 'bold',
+    borderBottom: `2px solid ${theme.colors.burgundy}`,
+};
 
 function AdminComments() {
     const [comments, setComments] = useState([]);
@@ -72,16 +87,25 @@ function AdminComments() {
         return text.substring(0, maxLength) + '...';
     };
 
+    const selectStyle = {
+        padding: '5px',
+        borderRadius: '2px',
+        border: `1px solid ${theme.colors.border}`,
+        fontFamily: theme.fonts.body,
+        fontSize: '12px',
+        color: theme.colors.ink,
+    };
+
     return (
         <div className="container">
-            <div style={{ marginBottom: '20px' }}>
-                <Link to="/admin/users" style={{ marginRight: '15px' }}>Manage Users</Link>
-                <Link to="/admin/works" style={{ marginRight: '15px' }}>Manage Works</Link>
-                <Link to="/admin/comments" style={{ marginRight: '15px', fontWeight: 'bold' }}>Manage Comments</Link>
-                <Link to="/admin/categories">Manage Categories</Link>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '15px' }}>
+                <Link to="/admin/users" style={adminNavStyle}>Manage Users</Link>
+                <Link to="/admin/works" style={adminNavStyle}>Manage Works</Link>
+                <Link to="/admin/comments" style={adminNavActiveStyle}>Manage Comments</Link>
+                <Link to="/admin/categories" style={adminNavStyle}>Manage Categories</Link>
             </div>
 
-            <h1 style={{ marginBottom: '20px' }}>Admin - Comment Management</h1>
+            <h1 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>Admin - Comment Management</h1>
 
             {message && <p className="success-message">{message}</p>}
             {error && <p className="error-message">{error}</p>}
@@ -90,11 +114,11 @@ function AdminComments() {
                 {loading ? (
                     <div className="loading">Loading comments...</div>
                 ) : comments.length === 0 ? (
-                    <p style={{ textAlign: 'center', padding: '20px', color: '#888' }}>No comments found.</p>
+                    <p style={{ textAlign: 'center', padding: '20px', color: theme.colors.muted }}>No comments found.</p>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Comment</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>User</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Work</th>
@@ -105,13 +129,13 @@ function AdminComments() {
                         </thead>
                         <tbody>
                             {comments.map(comment => (
-                                <tr key={comment._id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '12px', maxWidth: '200px' }}>
+                                <tr key={comment._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
+                                    <td style={{ padding: '12px', maxWidth: '200px', color: theme.colors.ink }}>
                                         {truncateText(comment.body)}
                                     </td>
-                                    <td style={{ padding: '12px' }}>{comment.username || comment.userId}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{comment.username || comment.userId}</td>
                                     <td style={{ padding: '12px' }}>
-                                        <Link to={`/work/${comment.workId}`} style={{ color: '#007bff' }}>
+                                        <Link to={`/work/${comment.workId}`} style={{ color: theme.colors.burgundy }}>
                                             {comment.workId}
                                         </Link>
                                     </td>
@@ -120,17 +144,15 @@ function AdminComments() {
                                             value={comment.status || 'visible'}
                                             onChange={(e) => handleStatusChange(comment._id, e.target.value)}
                                             style={{
-                                                padding: '5px',
-                                                borderRadius: '3px',
-                                                border: '1px solid #ddd',
-                                                background: comment.status === 'hidden' ? '#f8d7da' : '#d4edda'
+                                                ...selectStyle,
+                                                background: comment.status === 'hidden' ? theme.toast.error.bg : theme.toast.success.bg,
                                             }}
                                         >
                                             <option value="visible">visible</option>
                                             <option value="hidden">hidden</option>
                                         </select>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{formatDate(comment.createdAt)}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{formatDate(comment.createdAt)}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>
                                         <button
                                             className="btn btn-danger"
@@ -156,7 +178,7 @@ function AdminComments() {
                     >
                         Previous
                     </button>
-                    <span style={{ padding: '10px' }}>
+                    <span style={{ padding: '10px', color: theme.colors.secondary }}>
                         Page {pagination.page} of {pagination.totalPages}
                     </span>
                     <button

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workAPI, categoryAPI } from '../api';
+import theme from '../theme';
 
 function CreateWork() {
     const navigate = useNavigate();
@@ -51,19 +52,19 @@ function CreateWork() {
         };
 
         const result = await workAPI.create(data);
-        
+
         if (result.data) {
             navigate(`/edit-work/${result.data.id}`);
         } else {
             setError(result.error || 'Failed to create work');
         }
-        
+
         setLoading(false);
     };
 
     return (
         <div className="container" style={{ maxWidth: '800px' }}>
-            <h1 style={{ marginBottom: '20px' }}>Create New Work</h1>
+            <h1 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>Create New Work</h1>
 
             {error && <p className="error-message">{error}</p>}
 
@@ -122,8 +123,8 @@ function CreateWork() {
                         <button type="submit" className="btn btn-primary" disabled={loading}>
                             {loading ? 'Creating...' : 'Create Work'}
                         </button>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className="btn btn-secondary"
                             onClick={() => navigate('/my-works')}
                         >

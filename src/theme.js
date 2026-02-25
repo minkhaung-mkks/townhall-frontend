@@ -1,0 +1,55 @@
+const theme = {
+  fonts: {
+    heading: "'Playfair Display', Georgia, 'Times New Roman', serif",
+    body: "'Lora', Georgia, 'Times New Roman', serif",
+    accent: "'Caveat', cursive",
+  },
+  colors: {
+    pageBg: '#FAF6F0',
+    cardBg: '#F0EBE3',
+    hoverBg: '#E8E0D4',
+    ink: '#2C2C2C',
+    secondary: '#5C5C5C',
+    muted: '#8A8578',
+    border: '#D4C9B8',
+    burgundy: '#722F37',
+    burgundyHover: '#5A252C',
+    navy: '#1B3A5C',
+    navyHover: '#142D48',
+    forest: '#2D5F2D',
+    forestHover: '#224822',
+    rust: '#8B3A3A',
+    rustHover: '#6E2E2E',
+    gold: '#B8860B',
+    white: '#FFFFFF',
+    rankGold: '#C5A55A',
+    rankSilver: '#A8A095',
+    rankBronze: '#8B6B4A',
+  },
+  status: {
+    draft: '#7A7067',
+    submitted: '#B8860B',
+    approved: '#2D5F2D',
+    rejected: '#8B3A3A',
+    published: '#1B3A5C',
+    hidden: '#2C2C2C',
+  },
+  role: {
+    creator: '#7A7067',
+    editor: '#1B3A5C',
+    admin: '#722F37',
+  },
+  userStatus: {
+    active: '#2D5F2D',
+    suspended: '#B8860B',
+    banned: '#8B3A3A',
+  },
+  toast: {
+    success: { bg: '#E8F0E8', border: '#2D5F2D', text: '#1A3A1A' },
+    error: { bg: '#F0E0E0', border: '#8B3A3A', text: '#5C1A1A' },
+    warning: { bg: '#F0EAD6', border: '#B8860B', text: '#5C4306' },
+    info: { bg: '#E0E8F0', border: '#1B3A5C', text: '#0E1F30' },
+  },
+};
+
+export default theme;

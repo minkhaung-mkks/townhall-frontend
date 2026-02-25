@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { userAPI, adminAPI } from '../api';
+import theme from '../theme';
+
+const adminNavStyle = {
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    color: theme.colors.ink,
+    padding: '6px 0',
+    borderBottom: `1px solid transparent`,
+};
+const adminNavActiveStyle = {
+    ...adminNavStyle,
+    fontWeight: 'bold',
+    borderBottom: `2px solid ${theme.colors.burgundy}`,
+};
 
 function AdminUsers() {
     const [users, setUsers] = useState([]);
@@ -74,54 +89,26 @@ function AdminUsers() {
         });
     };
 
-    const getStatusBadge = (status) => {
-        const colors = {
-            active: '#28a745',
-            suspended: '#ffc107',
-            banned: '#dc3545'
-        };
-        return (
-            <span style={{
-                background: colors[status] || '#6c757d',
-                color: 'white',
-                padding: '3px 10px',
-                borderRadius: '3px',
-                fontSize: '12px'
-            }}>
-                {status}
-            </span>
-        );
-    };
-
-    const getRoleBadge = (role) => {
-        const colors = {
-            creator: '#6c757d',
-            editor: '#17a2b8',
-            admin: '#007bff'
-        };
-        return (
-            <span style={{
-                background: colors[role] || '#6c757d',
-                color: 'white',
-                padding: '3px 10px',
-                borderRadius: '3px',
-                fontSize: '12px'
-            }}>
-                {role}
-            </span>
-        );
+    const selectStyle = {
+        padding: '5px',
+        borderRadius: '2px',
+        border: `1px solid ${theme.colors.border}`,
+        background: theme.colors.cardBg,
+        fontFamily: theme.fonts.body,
+        fontSize: '12px',
+        color: theme.colors.ink,
     };
 
     return (
         <div className="container">
-            <div style={{ marginBottom: '20px' }}>
-                <Link to="/admin/users" style={{ marginRight: '15px', fontWeight: 'bold' }}>Manage Users</Link>
-                <Link to="/admin/works" style={{ marginRight: '15px' }}>Manage Works</Link>
-                <Link to="/admin/comments" style={{ marginRight: '15px' }}>Manage Comments</Link>
-                <Link to="/admin/categories">Manage Categories</Link>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '15px' }}>
+                <Link to="/admin/users" style={adminNavActiveStyle}>Manage Users</Link>
+                <Link to="/admin/works" style={adminNavStyle}>Manage Works</Link>
+                <Link to="/admin/comments" style={adminNavStyle}>Manage Comments</Link>
+                <Link to="/admin/categories" style={adminNavStyle}>Manage Categories</Link>
             </div>
 
-            <h1 style={{ marginBottom: '20px' }}>Admin - User Management</h1>
+            <h1 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>Admin - User Management</h1>
 
             {message && <p className="success-message">{message}</p>}
             {error && <p className="error-message">{error}</p>}
@@ -132,7 +119,7 @@ function AdminUsers() {
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Username</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Email</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Role</th>
@@ -143,25 +130,21 @@ function AdminUsers() {
                         </thead>
                         <tbody>
                             {users.map(user => (
-                                <tr key={user._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={user._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '12px' }}>
                                         <strong>{user.username}</strong>
                                         {user.firstname && (
-                                            <span style={{ color: '#666', marginLeft: '5px' }}>
+                                            <span style={{ color: theme.colors.muted, marginLeft: '5px' }}>
                                                 ({user.firstname} {user.lastname})
                                             </span>
                                         )}
                                     </td>
-                                    <td style={{ padding: '12px' }}>{user.email}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{user.email}</td>
                                     <td style={{ padding: '12px' }}>
                                         <select
                                             value={user.role}
                                             onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                                            style={{
-                                                padding: '5px',
-                                                borderRadius: '3px',
-                                                border: '1px solid #ddd'
-                                            }}
+                                            style={selectStyle}
                                         >
                                             <option value="creator">creator</option>
                                             <option value="editor">editor</option>
@@ -173,11 +156,9 @@ function AdminUsers() {
                                             value={user.status}
                                             onChange={(e) => handleStatusChange(user._id, e.target.value)}
                                             style={{
-                                                padding: '5px',
-                                                borderRadius: '3px',
-                                                border: '1px solid #ddd',
-                                                background: user.status === 'active' ? '#d4edda' :
-                                                           user.status === 'suspended' ? '#fff3cd' : '#f8d7da'
+                                                ...selectStyle,
+                                                background: user.status === 'active' ? theme.toast.success.bg :
+                                                           user.status === 'suspended' ? theme.toast.warning.bg : theme.toast.error.bg
                                             }}
                                         >
                                             <option value="active">active</option>
@@ -185,7 +166,7 @@ function AdminUsers() {
                                             <option value="banned">banned</option>
                                         </select>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{formatDate(user.createdAt)}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{formatDate(user.createdAt)}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>
                                         <button
                                             className="btn btn-danger"
@@ -211,7 +192,7 @@ function AdminUsers() {
                     >
                         Previous
                     </button>
-                    <span style={{ padding: '10px' }}>
+                    <span style={{ padding: '10px', color: theme.colors.secondary }}>
                         Page {pagination.page} of {pagination.totalPages}
                     </span>
                     <button

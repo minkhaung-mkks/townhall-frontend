@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../api';
+import theme from '../theme';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ function Register() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -59,17 +60,17 @@ function Register() {
         } else {
             setError(result.error || 'Registration failed');
         }
-        
+
         setLoading(false);
     };
 
     return (
         <div className="container" style={{ maxWidth: '400px', marginTop: '50px' }}>
             <div className="card">
-                <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>Register</h2>
-                
+                <h2 style={{ marginBottom: '20px', textAlign: 'center', fontFamily: theme.fonts.heading }}>Register</h2>
+
                 {error && <p className="error-message">{error}</p>}
-                
+
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Username *</label>
@@ -81,7 +82,7 @@ function Register() {
                             placeholder="Choose a username"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label>Email *</label>
                         <input
@@ -92,7 +93,7 @@ function Register() {
                             placeholder="Enter your email"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label>Password *</label>
                         <input
@@ -103,7 +104,7 @@ function Register() {
                             placeholder="Create a password"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label>Confirm Password *</label>
                         <input
@@ -114,7 +115,7 @@ function Register() {
                             placeholder="Confirm your password"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label>First Name</label>
                         <input
@@ -125,7 +126,7 @@ function Register() {
                             placeholder="Your first name"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label>Last Name</label>
                         <input
@@ -136,9 +137,9 @@ function Register() {
                             placeholder="Your last name"
                         />
                     </div>
-                    
-                    <button 
-                        type="submit" 
+
+                    <button
+                        type="submit"
                         className="btn btn-primary"
                         style={{ width: '100%' }}
                         disabled={loading}
@@ -146,9 +147,9 @@ function Register() {
                         {loading ? 'Creating account...' : 'Register'}
                     </button>
                 </form>
-                
+
                 <p style={{ marginTop: '20px', textAlign: 'center' }}>
-                    Already have an account? <Link to="/login" style={{ color: '#007bff' }}>Login here</Link>
+                    Already have an account? <Link to="/login" style={{ color: theme.colors.burgundy }}>Login here</Link>
                 </p>
             </div>
         </div>

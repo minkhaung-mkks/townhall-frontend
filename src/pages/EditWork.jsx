@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { workAPI, categoryAPI, draftAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import theme from '../theme';
 
 function EditWork() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    
+
     const [work, setWork] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
@@ -53,7 +54,12 @@ function EditWork() {
     const fetchDrafts = async () => {
         const result = await draftAPI.getAll(id);
         if (result.data) {
-            setDrafts(result.data.drafts);
+            const sorted = [...result.data.drafts].sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return 0;
+            });
+            setDrafts(sorted);
         }
     };
 
@@ -77,7 +83,7 @@ function EditWork() {
         };
 
         const result = await workAPI.update(id, data);
-        
+
         if (result.data) {
             setMessage('Work updated successfully!');
             fetchWork();
@@ -93,7 +99,7 @@ function EditWork() {
         }
 
         const result = await workAPI.update(id, { status: 'submitted' });
-        
+
         if (result.data) {
             setMessage('Work submitted for review!');
             fetchWork();
@@ -126,6 +132,13 @@ function EditWork() {
         setMessage('Draft loaded!');
     };
 
+    const handleTogglePin = async (draft) => {
+        const result = await draftAPI.update(draft._id, { pinned: !draft.pinned });
+        if (result.data) {
+            fetchDrafts();
+        }
+    };
+
     const handleDeleteDraft = async (draftId) => {
         if (window.confirm('Delete this draft?')) {
             const result = await draftAPI.delete(draftId);
@@ -146,19 +159,21 @@ function EditWork() {
     return (
         <div className="container" style={{ maxWidth: '900px' }}>
             <div style={{ marginBottom: '20px' }}>
-                <Link to="/my-works">&larr; Back to My Works</Link>
+                <Link to="/my-works" style={{ color: theme.colors.burgundy }}>&larr; Back to My Works</Link>
             </div>
 
-            <h1 style={{ marginBottom: '10px' }}>Edit Work</h1>
-            
+            <h1 style={{ marginBottom: '10px', fontFamily: theme.fonts.heading }}>Edit Work</h1>
+
             <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <span>Status: </span>
                 <span style={{
-                    background: work.status === 'published' ? '#28a745' : 
-                               work.status === 'submitted' ? '#ffc107' : '#6c757d',
+                    background: theme.status[work.status] || theme.colors.muted,
                     color: 'white',
                     padding: '5px 12px',
-                    borderRadius: '3px'
+                    borderRadius: '2px',
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
                 }}>
                     {work.status}
                 </span>
@@ -221,16 +236,16 @@ function EditWork() {
                                 <button type="submit" className="btn btn-primary">
                                     Save Changes
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="btn btn-secondary"
                                     onClick={handleSaveDraft}
                                 >
                                     Save as Draft
                                 </button>
                                 {work.status === 'draft' && (
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="btn btn-success"
                                         onClick={handleSubmitForReview}
                                     >
@@ -244,28 +259,37 @@ function EditWork() {
 
                 <div style={{ width: '250px' }}>
                     <div className="card">
-                        <h4 style={{ marginBottom: '15px' }}>Saved Drafts ({drafts.length}/5)</h4>
-                        
+                        <h4 style={{ marginBottom: '15px', fontFamily: theme.fonts.heading }}>Saved Drafts ({drafts.length}/5)</h4>
+
                         {drafts.length === 0 ? (
-                            <p style={{ color: '#888', fontSize: '14px' }}>No saved drafts</p>
+                            <p style={{ color: theme.colors.muted, fontSize: '14px' }}>No saved drafts</p>
                         ) : (
                             drafts.map(draft => (
-                                <div 
+                                <div
                                     key={draft._id}
-                                    style={{ 
-                                        padding: '10px', 
-                                        background: '#f8f9fa', 
+                                    style={{
+                                        padding: '10px',
+                                        background: draft.pinned ? theme.colors.paper : theme.colors.hoverBg,
                                         marginBottom: '10px',
-                                        borderRadius: '5px'
+                                        borderRadius: '2px',
+                                        border: draft.pinned ? `2px solid ${theme.colors.burgundy}` : '2px solid transparent',
                                     }}
                                 >
-                                    <p style={{ fontSize: '14px', fontWeight: '500', marginBottom: '5px' }}>
+                                    <p style={{ fontSize: '14px', fontWeight: '500', marginBottom: '5px', color: theme.colors.ink }}>
+                                        {draft.pinned && <span title="Pinned" style={{ marginRight: '4px' }}>&#128204;</span>}
                                         {draft.title}
                                     </p>
-                                    <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px' }}>
+                                    <p style={{ fontSize: '12px', color: theme.colors.muted, marginBottom: '10px' }}>
                                         {new Date(draft.createdAt).toLocaleDateString()}
                                     </p>
-                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                        <button
+                                            className="btn btn-secondary"
+                                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                                            onClick={() => handleTogglePin(draft)}
+                                        >
+                                            {draft.pinned ? 'Unpin' : 'Pin'}
+                                        </button>
                                         <button
                                             className="btn btn-secondary"
                                             style={{ fontSize: '11px', padding: '4px 8px' }}

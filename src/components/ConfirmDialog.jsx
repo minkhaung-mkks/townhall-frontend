@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
+import theme from '../theme';
 
-function ConfirmDialog({ 
-    isOpen, 
-    title = 'Confirm Action', 
-    message = 'Are you sure you want to proceed?', 
+function ConfirmDialog({
+    isOpen,
+    title = 'Confirm Action',
+    message = 'Are you sure you want to proceed?',
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     confirmStyle = 'danger',
-    onConfirm, 
-    onCancel 
+    onConfirm,
+    onCancel
 }) {
     const [visible, setVisible] = useState(isOpen);
 
@@ -48,23 +49,23 @@ function ConfirmDialog({
             zIndex: 9999
         }}>
             <div style={{
-                background: 'white',
+                background: theme.colors.cardBg,
                 padding: '30px',
-                borderRadius: '8px',
+                borderRadius: '2px',
                 maxWidth: '400px',
                 width: '90%',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                border: `1px solid ${theme.colors.border}`,
             }}>
-                <h3 style={{ marginBottom: '15px' }}>{title}</h3>
-                <p style={{ color: '#666', marginBottom: '25px' }}>{message}</p>
+                <h3 style={{ marginBottom: '15px', fontFamily: theme.fonts.heading }}>{title}</h3>
+                <p style={{ color: theme.colors.secondary, marginBottom: '25px' }}>{message}</p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                    <button 
+                    <button
                         className="btn btn-secondary"
                         onClick={handleCancel}
                     >
                         {cancelText}
                     </button>
-                    <button 
+                    <button
                         className={`btn ${buttonStyles[confirmStyle] || 'btn-primary'}`}
                         onClick={handleConfirm}
                     >

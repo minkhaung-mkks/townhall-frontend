@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { workAPI, adminAPI } from '../api';
+import theme from '../theme';
+
+const adminNavStyle = {
+    fontSize: '12px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    color: theme.colors.ink,
+    padding: '6px 0',
+    borderBottom: `1px solid transparent`,
+};
+const adminNavActiveStyle = {
+    ...adminNavStyle,
+    fontWeight: 'bold',
+    borderBottom: `2px solid ${theme.colors.burgundy}`,
+};
 
 function AdminWorks() {
     const [works, setWorks] = useState([]);
@@ -28,7 +43,7 @@ function AdminWorks() {
         if (filter) {
             params.status = filter;
         }
-        
+
         const result = await workAPI.getAll(params);
         if (result.data) {
             setWorks(result.data.works);
@@ -73,38 +88,39 @@ function AdminWorks() {
         });
     };
 
-    const getStatusBadge = (status) => {
-        const colors = {
-            draft: '#6c757d',
-            submitted: '#ffc107',
-            approved: '#28a745',
-            rejected: '#dc3545',
-            published: '#007bff',
-            hidden: '#333'
-        };
-        return (
-            <span style={{
-                background: colors[status] || '#6c757d',
-                color: 'white',
-                padding: '3px 10px',
-                borderRadius: '3px',
-                fontSize: '12px'
-            }}>
-                {status}
-            </span>
-        );
+    const getStatusBadge = (status) => (
+        <span style={{
+            background: theme.status[status] || theme.colors.muted,
+            color: 'white',
+            padding: '3px 10px',
+            borderRadius: '2px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+        }}>
+            {status}
+        </span>
+    );
+
+    const selectStyle = {
+        padding: '5px',
+        borderRadius: '2px',
+        border: `1px solid ${theme.colors.border}`,
+        background: theme.colors.cardBg,
+        fontFamily: theme.fonts.body,
+        fontSize: '12px',
+        color: theme.colors.ink,
     };
 
     return (
         <div className="container">
-            <div style={{ marginBottom: '20px' }}>
-                <Link to="/admin/users" style={{ marginRight: '15px' }}>Manage Users</Link>
-                <Link to="/admin/works" style={{ marginRight: '15px', fontWeight: 'bold' }}>Manage Works</Link>
-                <Link to="/admin/comments" style={{ marginRight: '15px' }}>Manage Comments</Link>
-                <Link to="/admin/categories">Manage Categories</Link>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '15px' }}>
+                <Link to="/admin/users" style={adminNavStyle}>Manage Users</Link>
+                <Link to="/admin/works" style={adminNavActiveStyle}>Manage Works</Link>
+                <Link to="/admin/comments" style={adminNavStyle}>Manage Comments</Link>
+                <Link to="/admin/categories" style={adminNavStyle}>Manage Categories</Link>
             </div>
 
-            <h1 style={{ marginBottom: '20px' }}>Admin - Work Management</h1>
+            <h1 style={{ marginBottom: '20px', fontFamily: theme.fonts.heading }}>Admin - Work Management</h1>
 
             {message && <p className="success-message">{message}</p>}
             {error && <p className="error-message">{error}</p>}
@@ -113,7 +129,14 @@ function AdminWorks() {
                 <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    style={{ padding: '8px', borderRadius: '5px', border: '1px solid #ddd' }}
+                    style={{
+                        padding: '8px',
+                        borderRadius: '2px',
+                        border: `1px solid ${theme.colors.border}`,
+                        background: theme.colors.cardBg,
+                        fontFamily: theme.fonts.body,
+                        color: theme.colors.ink,
+                    }}
                 >
                     <option value="">All Statuses</option>
                     <option value="draft">Draft</option>
@@ -131,7 +154,7 @@ function AdminWorks() {
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8f9fa' }}>
+                            <tr style={{ background: theme.colors.hoverBg }}>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Title</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Author</th>
                                 <th style={{ textAlign: 'left', padding: '12px' }}>Status</th>
@@ -141,22 +164,18 @@ function AdminWorks() {
                         </thead>
                         <tbody>
                             {works.map(work => (
-                                <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={work._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '12px' }}>
-                                        <Link to={`/work/${work._id}`} style={{ color: '#007bff' }}>
+                                        <Link to={`/work/${work._id}`} style={{ color: theme.colors.burgundy }}>
                                             {work.title}
                                         </Link>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{work.authorId}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{work.author ? `${work.author.firstname} ${work.author.lastname}` : work.authorId}</td>
                                     <td style={{ padding: '12px' }}>
                                         <select
                                             value={work.status}
                                             onChange={(e) => handleStatusChange(work._id, e.target.value)}
-                                            style={{
-                                                padding: '5px',
-                                                borderRadius: '3px',
-                                                border: '1px solid #ddd'
-                                            }}
+                                            style={selectStyle}
                                         >
                                             <option value="draft">draft</option>
                                             <option value="submitted">submitted</option>
@@ -166,7 +185,7 @@ function AdminWorks() {
                                             <option value="hidden">hidden</option>
                                         </select>
                                     </td>
-                                    <td style={{ padding: '12px' }}>{formatDate(work.createdAt)}</td>
+                                    <td style={{ padding: '12px', color: theme.colors.secondary }}>{formatDate(work.createdAt)}</td>
                                     <td style={{ padding: '12px', textAlign: 'right' }}>
                                         <button
                                             className="btn btn-danger"
@@ -192,7 +211,7 @@ function AdminWorks() {
                     >
                         Previous
                     </button>
-                    <span style={{ padding: '10px' }}>
+                    <span style={{ padding: '10px', color: theme.colors.secondary }}>
                         Page {pagination.page} of {pagination.totalPages}
                     </span>
                     <button

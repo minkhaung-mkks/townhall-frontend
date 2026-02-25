@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userAPI, workAPI } from '../api';
 import { Link } from 'react-router-dom';
+import theme from '../theme';
 
 function Profile() {
     const { user, checkAuth } = useAuth();
@@ -84,10 +85,10 @@ function Profile() {
         }
 
         const userId = user._id || user.id;
-        const result = await userAPI.update(userId, { 
-            password: passwordData.newPassword 
+        const result = await userAPI.update(userId, {
+            password: passwordData.newPassword
         });
-        
+
         if (result.data) {
             setMessage('Password changed successfully!');
             setPasswordData({
@@ -111,27 +112,19 @@ function Profile() {
         });
     };
 
-    const getStatusBadge = (status) => {
-        const colors = {
-            draft: '#6c757d',
-            submitted: '#ffc107',
-            approved: '#28a745',
-            rejected: '#dc3545',
-            published: '#007bff',
-            hidden: '#333'
-        };
-        return (
-            <span style={{
-                background: colors[status] || '#6c757d',
-                color: 'white',
-                padding: '3px 8px',
-                borderRadius: '3px',
-                fontSize: '12px'
-            }}>
-                {status}
-            </span>
-        );
-    };
+    const getStatusBadge = (status) => (
+        <span style={{
+            background: theme.status[status] || theme.colors.muted,
+            color: 'white',
+            padding: '3px 8px',
+            borderRadius: '2px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+        }}>
+            {status}
+        </span>
+    );
 
     if (loading) {
         return <div className="loading">Loading...</div>;
@@ -145,9 +138,9 @@ function Profile() {
         <div className="container" style={{ maxWidth: '800px' }}>
             <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2>My Profile</h2>
+                    <h2 style={{ fontFamily: theme.fonts.heading }}>My Profile</h2>
                     {!editing && (
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={() => setEditing(true)}
                         >
@@ -163,20 +156,20 @@ function Profile() {
                     <form onSubmit={handleUpdateProfile}>
                         <div className="form-group">
                             <label>Username</label>
-                            <input 
-                                type="text" 
-                                value={profile.username} 
-                                disabled 
-                                style={{ background: '#f5f5f5' }}
+                            <input
+                                type="text"
+                                value={profile.username}
+                                disabled
+                                style={{ background: theme.colors.hoverBg }}
                             />
                         </div>
                         <div className="form-group">
                             <label>Email</label>
-                            <input 
-                                type="email" 
-                                value={profile.email} 
-                                disabled 
-                                style={{ background: '#f5f5f5' }}
+                            <input
+                                type="email"
+                                value={profile.email}
+                                disabled
+                                style={{ background: theme.colors.hoverBg }}
                             />
                         </div>
                         <div className="form-group">
@@ -205,8 +198,8 @@ function Profile() {
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <button type="submit" className="btn btn-primary">Save Changes</button>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="btn btn-secondary"
                                 onClick={() => setEditing(false)}
                             >
@@ -235,11 +228,33 @@ function Profile() {
                             </div>
                             <div>
                                 <strong>Role:</strong>
-                                <p>{profile.role}</p>
+                                <p>
+                                    <span style={{
+                                        background: theme.role[profile.role] || theme.colors.muted,
+                                        color: 'white',
+                                        padding: '3px 8px',
+                                        borderRadius: '2px',
+                                        fontSize: '12px',
+                                        textTransform: 'uppercase',
+                                    }}>
+                                        {profile.role}
+                                    </span>
+                                </p>
                             </div>
                             <div>
                                 <strong>Status:</strong>
-                                <p>{profile.status}</p>
+                                <p>
+                                    <span style={{
+                                        background: theme.userStatus[profile.status] || theme.colors.muted,
+                                        color: 'white',
+                                        padding: '3px 8px',
+                                        borderRadius: '2px',
+                                        fontSize: '12px',
+                                        textTransform: 'uppercase',
+                                    }}>
+                                        {profile.status}
+                                    </span>
+                                </p>
                             </div>
                             <div style={{ gridColumn: '1 / -1' }}>
                                 <strong>Bio:</strong>
@@ -251,7 +266,7 @@ function Profile() {
                             </div>
                         </div>
 
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={() => setShowPasswordForm(!showPasswordForm)}
                             style={{ marginTop: '20px' }}
@@ -260,8 +275,13 @@ function Profile() {
                         </button>
 
                         {showPasswordForm && (
-                            <form onSubmit={handleChangePassword} style={{ marginTop: '20px', padding: '20px', background: '#f9f9f9', borderRadius: '5px' }}>
-                                <h4>Change Password</h4>
+                            <form onSubmit={handleChangePassword} style={{
+                                marginTop: '20px',
+                                padding: '20px',
+                                background: theme.colors.hoverBg,
+                                borderRadius: '2px'
+                            }}>
+                                <h4 style={{ fontFamily: theme.fonts.heading }}>Change Password</h4>
                                 <div className="form-group">
                                     <label>New Password</label>
                                     <input
@@ -287,18 +307,18 @@ function Profile() {
 
             <div className="card" style={{ marginTop: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3>My Works</h3>
+                    <h3 style={{ fontFamily: theme.fonts.heading }}>My Works</h3>
                     <Link to="/create-work" className="btn btn-primary">+ Create New Work</Link>
                 </div>
 
                 {userWorks.length === 0 ? (
-                    <p style={{ textAlign: 'center', color: '#888' }}>
+                    <p style={{ textAlign: 'center', color: theme.colors.muted }}>
                         You haven't created any works yet.
                     </p>
                 ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #ddd' }}>
+                            <tr style={{ borderBottom: `2px solid ${theme.colors.border}` }}>
                                 <th style={{ textAlign: 'left', padding: '10px' }}>Title</th>
                                 <th style={{ textAlign: 'left', padding: '10px' }}>Status</th>
                                 <th style={{ textAlign: 'left', padding: '10px' }}>Created</th>
@@ -307,17 +327,17 @@ function Profile() {
                         </thead>
                         <tbody>
                             {userWorks.map(work => (
-                                <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
+                                <tr key={work._id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                                     <td style={{ padding: '10px' }}>
-                                        <Link to={`/work/${work._id}`} style={{ color: '#007bff' }}>
+                                        <Link to={`/work/${work._id}`} style={{ color: theme.colors.burgundy }}>
                                             {work.title}
                                         </Link>
                                     </td>
                                     <td style={{ padding: '10px' }}>{getStatusBadge(work.status)}</td>
                                     <td style={{ padding: '10px' }}>{formatDate(work.createdAt)}</td>
                                     <td style={{ padding: '10px', textAlign: 'right' }}>
-                                        <Link 
-                                            to={`/edit-work/${work._id}`} 
+                                        <Link
+                                            to={`/edit-work/${work._id}`}
                                             className="btn btn-secondary"
                                             style={{ fontSize: '12px', padding: '5px 10px' }}
                                         >

@@ -1,3 +1,5 @@
+import theme from '../theme';
+
 function LoadingSpinner({ size = 'medium', text = '' }) {
     const sizes = {
         small: { width: '20px', height: '20px', border: '2px' },
@@ -7,8 +9,8 @@ function LoadingSpinner({ size = 'medium', text = '' }) {
 
     const spinnerStyle = {
         ...sizes[size],
-        border: `${sizes[size].border} solid #f3f3f3`,
-        borderTop: `${sizes[size].border} solid #007bff`,
+        border: `${sizes[size].border} solid ${theme.colors.cardBg}`,
+        borderTop: `${sizes[size].border} solid ${theme.colors.burgundy}`,
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
         margin: '0 auto'
@@ -23,7 +25,7 @@ function LoadingSpinner({ size = 'medium', text = '' }) {
                 }`}
             </style>
             <div style={spinnerStyle}></div>
-            {text && <p style={{ marginTop: '10px', color: '#666' }}>{text}</p>}
+            {text && <p style={{ marginTop: '10px', color: theme.colors.muted }}>{text}</p>}
         </div>
     );
 }

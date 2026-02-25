@@ -100,6 +100,11 @@ export const adminAPI = {
     deleteComment: (id) => apiCall(`/admin/comment/${id}`, { method: 'DELETE' }),
 };
 
+export const likeAPI = {
+    toggle: (workId) => apiCall('/like', { method: 'POST', body: { workId } }),
+    getForWork: (workId) => apiCall(`/like?workId=${workId}`),
+};
+
 export const statsAPI = {
     getStats: () => apiCall('/stats'),
 };
