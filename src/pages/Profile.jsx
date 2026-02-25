@@ -1,0 +1,333 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { userAPI, workAPI } from '../api';
+import { Link } from 'react-router-dom';
+
+function Profile() {
+    const { user, checkAuth } = useAuth();
+    const [profile, setProfile] = useState(null);
+    const [userWorks, setUserWorks] = useState([]);
+    const [editing, setEditing] = useState(false);
+    const [formData, setFormData] = useState({
+        firstname: '',
+        lastname: '',
+        bio: ''
+    });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            fetchProfile();
+            fetchUserWorks();
+        }
+    }, [user]);
+
+    const fetchProfile = async () => {
+        const result = await userAPI.getById(user.id);
+        if (result.data) {
+            setProfile(result.data);
+            setFormData({
+                firstname: result.data.firstname || '',
+                lastname: result.data.lastname || '',
+                bio: result.data.bio || ''
+            });
+        }
+        setLoading(false);
+    };
+
+    const fetchUserWorks = async () => {
+        const result = await workAPI.getAll({ authorId: user.id, limit: 20 });
+        if (result.data) {
+            setUserWorks(result.data.works);
+        }
+    };
+
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        setError('');
+        setMessage('');
+
+        const result = await userAPI.update(user.id, formData);
+        if (result.data) {
+            setMessage('Profile updated successfully!');
+            setEditing(false);
+            checkAuth();
+        } else {
+            setError(result.error);
+        }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setError('');
+        setMessage('');
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setError('New passwords do not match');
+            return;
+        }
+
+        if (passwordData.newPassword.length < 6) {
+            setError('Password must be at least 6 characters');
+            return;
+        }
+
+        const result = await userAPI.update(user.id, { 
+            password: passwordData.newPassword 
+        });
+        
+        if (result.data) {
+            setMessage('Password changed successfully!');
+            setPasswordData({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            });
+            setShowPasswordForm(false);
+        } else {
+            setError(result.error);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const getStatusBadge = (status) => {
+        const colors = {
+            draft: '#6c757d',
+            submitted: '#ffc107',
+            approved: '#28a745',
+            rejected: '#dc3545',
+            published: '#007bff',
+            hidden: '#333'
+        };
+        return (
+            <span style={{
+                background: colors[status] || '#6c757d',
+                color: 'white',
+                padding: '3px 8px',
+                borderRadius: '3px',
+                fontSize: '12px'
+            }}>
+                {status}
+            </span>
+        );
+    };
+
+    if (loading) {
+        return <div className="loading">Loading...</div>;
+    }
+
+    if (!profile) {
+        return <div className="container">Profile not found</div>;
+    }
+
+    return (
+        <div className="container" style={{ maxWidth: '800px' }}>
+            <div className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2>My Profile</h2>
+                    {!editing && (
+                        <button 
+                            className="btn btn-secondary"
+                            onClick={() => setEditing(true)}
+                        >
+                            Edit Profile
+                        </button>
+                    )}
+                </div>
+
+                {message && <p className="success-message">{message}</p>}
+                {error && <p className="error-message">{error}</p>}
+
+                {editing ? (
+                    <form onSubmit={handleUpdateProfile}>
+                        <div className="form-group">
+                            <label>Username</label>
+                            <input 
+                                type="text" 
+                                value={profile.username} 
+                                disabled 
+                                style={{ background: '#f5f5f5' }}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Email</label>
+                            <input 
+                                type="email" 
+                                value={profile.email} 
+                                disabled 
+                                style={{ background: '#f5f5f5' }}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>First Name</label>
+                            <input
+                                type="text"
+                                value={formData.firstname}
+                                onChange={(e) => setFormData({...formData, firstname: e.target.value})}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Last Name</label>
+                            <input
+                                type="text"
+                                value={formData.lastname}
+                                onChange={(e) => setFormData({...formData, lastname: e.target.value})}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Bio</label>
+                            <textarea
+                                value={formData.bio}
+                                onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                                style={{ minHeight: '100px' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button type="submit" className="btn btn-primary">Save Changes</button>
+                            <button 
+                                type="button" 
+                                className="btn btn-secondary"
+                                onClick={() => setEditing(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div>
+                                <strong>Username:</strong>
+                                <p>{profile.username}</p>
+                            </div>
+                            <div>
+                                <strong>Email:</strong>
+                                <p>{profile.email}</p>
+                            </div>
+                            <div>
+                                <strong>First Name:</strong>
+                                <p>{profile.firstname || '-'}</p>
+                            </div>
+                            <div>
+                                <strong>Last Name:</strong>
+                                <p>{profile.lastname || '-'}</p>
+                            </div>
+                            <div>
+                                <strong>Role:</strong>
+                                <p>{profile.role}</p>
+                            </div>
+                            <div>
+                                <strong>Status:</strong>
+                                <p>{profile.status}</p>
+                            </div>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                                <strong>Bio:</strong>
+                                <p>{profile.bio || 'No bio yet.'}</p>
+                            </div>
+                            <div>
+                                <strong>Member Since:</strong>
+                                <p>{formatDate(profile.createdAt)}</p>
+                            </div>
+                        </div>
+
+                        <button 
+                            className="btn btn-secondary"
+                            onClick={() => setShowPasswordForm(!showPasswordForm)}
+                            style={{ marginTop: '20px' }}
+                        >
+                            Change Password
+                        </button>
+
+                        {showPasswordForm && (
+                            <form onSubmit={handleChangePassword} style={{ marginTop: '20px', padding: '20px', background: '#f9f9f9', borderRadius: '5px' }}>
+                                <h4>Change Password</h4>
+                                <div className="form-group">
+                                    <label>New Password</label>
+                                    <input
+                                        type="password"
+                                        value={passwordData.newPassword}
+                                        onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={passwordData.confirmPassword}
+                                        onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                                    />
+                                </div>
+                                <button type="submit" className="btn btn-primary">Update Password</button>
+                            </form>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <div className="card" style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3>My Works</h3>
+                    <Link to="/create-work" className="btn btn-primary">+ Create New Work</Link>
+                </div>
+
+                {userWorks.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: '#888' }}>
+                        You haven't created any works yet.
+                    </p>
+                ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '2px solid #ddd' }}>
+                                <th style={{ textAlign: 'left', padding: '10px' }}>Title</th>
+                                <th style={{ textAlign: 'left', padding: '10px' }}>Status</th>
+                                <th style={{ textAlign: 'left', padding: '10px' }}>Created</th>
+                                <th style={{ textAlign: 'right', padding: '10px' }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {userWorks.map(work => (
+                                <tr key={work._id} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '10px' }}>
+                                        <Link to={`/work/${work._id}`} style={{ color: '#007bff' }}>
+                                            {work.title}
+                                        </Link>
+                                    </td>
+                                    <td style={{ padding: '10px' }}>{getStatusBadge(work.status)}</td>
+                                    <td style={{ padding: '10px' }}>{formatDate(work.createdAt)}</td>
+                                    <td style={{ padding: '10px', textAlign: 'right' }}>
+                                        <Link 
+                                            to={`/edit-work/${work._id}`} 
+                                            className="btn btn-secondary"
+                                            style={{ fontSize: '12px', padding: '5px 10px' }}
+                                        >
+                                            Edit
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Profile;
